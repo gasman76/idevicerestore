@@ -4313,44 +4313,63 @@ int restore_send_restore_local_policy(restored_client_t restore, struct idevicer
 	return 0;
 }
 
-int restore_send_buildidentity(restored_client_t restore, struct idevicerestore_client_t* client, plist_t msg)
-{
-	restored_error_t restore_error;
-	plist_t dict;
+int restore_send_buildidentity(restored_client_t restore, struct idevicerestore_client_t* client, plist_t msg) {
+  restored_error_t restore_error;
+  plist_t dict;
 
-	info("About to send BuildIdentity Dict...\n");
+  info("About to send BuildIdentity Dict...\n");
 
-	plist_t build_identity = restore_get_build_identity_from_request(client, msg);
+  plist_t build_identity = restore_get_build_identity_from_request(client, msg);
 
-	dict = plist_new_dict();
+  dict = plist_new_dict();
 
-    plist_t sep_manifest = plist_copy(plist_dict_get_item(client->sepBuildIdentity, "Manifest"));
-    plist_t build_identity_manifest = plist_dict_get_item(build_identity, "Manifest");
-    _plist_dict_copy_item(build_identity, client->sepBuildIdentity, "Cryptex1,Version", NULL);
-    _plist_dict_copy_item(build_identity, client->sepBuildIdentity, "Cryptex1,PreauthorizationVersion", NULL);
-    _plist_dict_copy_item(build_identity, client->sepBuildIdentity, "Cryptex1,FakeRoot", NULL);
+  const char *disable_latest = getenv("IDR_DISABLE_LATEST_CRYPTEX");
+  if (!disable_latest) {
+    plist_t sep_manifest =
+        plist_copy(plist_dict_get_item(client->sepBuildIdentity, "Manifest"));
+    plist_t build_identity_manifest =
+      plist_dict_get_item(build_identity, "Manifest");
+    _plist_dict_copy_item(build_identity, client->sepBuildIdentity,
+                        "Cryptex1,Version", NULL);
+    _plist_dict_copy_item(build_identity, client->sepBuildIdentity,
+                        "Cryptex1,PreauthorizationVersion", NULL);
+    _plist_dict_copy_item(build_identity, client->sepBuildIdentity,
+                        "Cryptex1,FakeRoot", NULL);
     plist_dict_remove_item(build_identity_manifest, "Cryptex1,SystemOS");
     plist_dict_remove_item(build_identity_manifest, "Cryptex1,SystemVolume");
     plist_dict_remove_item(build_identity_manifest, "Cryptex1,SystemTrustCache");
     plist_dict_remove_item(build_identity_manifest, "Cryptex1,AppOS");
     plist_dict_remove_item(build_identity_manifest, "Cryptex1,AppVolume");
     plist_dict_remove_item(build_identity_manifest, "Cryptex1,AppTrustCache");
-    plist_dict_remove_item(build_identity_manifest, "Cryptex1,MobileAssetBrainOS");
-    plist_dict_remove_item(build_identity_manifest, "Cryptex1,MobileAssetBrainVolume");
-    plist_dict_remove_item(build_identity_manifest, "Cryptex1,MobileAssetBrainTrustCache");
-    _plist_dict_copy_item(build_identity_manifest, sep_manifest, "Cryptex1,SystemOS", NULL);
-    _plist_dict_copy_item(build_identity_manifest, sep_manifest, "Cryptex1,SystemVolume", NULL);
-    _plist_dict_copy_item(build_identity_manifest, sep_manifest, "Cryptex1,SystemTrustCache", NULL);
-    _plist_dict_copy_item(build_identity_manifest, sep_manifest, "Cryptex1,AppOS", NULL);
-    _plist_dict_copy_item(build_identity_manifest, sep_manifest, "Cryptex1,AppVolume", NULL);
-    _plist_dict_copy_item(build_identity_manifest, sep_manifest, "Cryptex1,AppTrustCache", NULL);
-    _plist_dict_copy_item(build_identity_manifest, sep_manifest, "Cryptex1,MobileAssetBrainOS", NULL);
-    _plist_dict_copy_item(build_identity_manifest, sep_manifest, "Cryptex1,MobileAssetBrainVolume", NULL);
-    _plist_dict_copy_item(build_identity_manifest, sep_manifest, "Cryptex1,MobileAssetBrainTrustCache", NULL);
+    plist_dict_remove_item(build_identity_manifest,
+                         "Cryptex1,MobileAssetBrainOS");
+    plist_dict_remove_item(build_identity_manifest,
+                         "Cryptex1,MobileAssetBrainVolume");
+    plist_dict_remove_item(build_identity_manifest,
+                         "Cryptex1,MobileAssetBrainTrustCache");
+    _plist_dict_copy_item(build_identity_manifest, sep_manifest,
+                        "Cryptex1,SystemOS", NULL);
+    _plist_dict_copy_item(build_identity_manifest, sep_manifest,
+                        "Cryptex1,SystemVolume", NULL);
+    _plist_dict_copy_item(build_identity_manifest, sep_manifest,
+                        "Cryptex1,SystemTrustCache", NULL);
+    _plist_dict_copy_item(build_identity_manifest, sep_manifest, "Cryptex1,AppOS",
+                        NULL);
+    _plist_dict_copy_item(build_identity_manifest, sep_manifest,
+                        "Cryptex1,AppVolume", NULL);
+    _plist_dict_copy_item(build_identity_manifest, sep_manifest,
+                        "Cryptex1,AppTrustCache", NULL);
+    _plist_dict_copy_item(build_identity_manifest, sep_manifest,
+                        "Cryptex1,MobileAssetBrainOS", NULL);
+    _plist_dict_copy_item(build_identity_manifest, sep_manifest,
+                        "Cryptex1,MobileAssetBrainVolume", NULL);
+    _plist_dict_copy_item(build_identity_manifest, sep_manifest,
+                        "Cryptex1,MobileAssetBrainTrustCache", NULL);
     debug("build_identity:\n");
     debug_plist(build_identity);
+  }
 
-    plist_dict_set_item(dict, "BuildIdentityDict", plist_copy(build_identity));
+        plist_dict_set_item(dict, "BuildIdentityDict", plist_copy(build_identity));
 
 	plist_t node = plist_access_path(msg, 2, "Arguments", "Variant");
 	if(node) {
